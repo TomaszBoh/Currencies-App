@@ -1,5 +1,6 @@
 app copy.py
 .venv/
+page backup.html
 templates/about.html
 templates/footer.html
 templates/header.html
