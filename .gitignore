@@ -1,0 +1,8 @@
+.venv/
+templates/about.html
+templates/footer.html
+templates/header.html
+templates/index.html
+templates/person.html
+templates/price.html
+templates/variables.html

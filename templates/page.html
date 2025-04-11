@@ -1,14 +1,131 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+    
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #2c3e50;
+        }
+    
+        form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 30px;
+            align-items: flex-end;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+    
+        label {
+            font-weight: 600;
+            margin-right: 5px;
+        }
+    
+        select,
+        input[type="date"],
+        button {
+            padding: 8px 12px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
+    
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+    
+        button:hover {
+            background-color: #2980b9;
+        }
+    
+        canvas {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+    
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+    
+        th, td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+    
+        th {
+            background-color: #f1f1f1;
+            font-weight: bold;
+        }
+    
+        footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 14px;
+            color: #777;
+        }
+    
+        @media (max-width: 600px) {
+            form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+    
+            canvas {
+                width: 100% !important;
+                height: auto !important;
+            }
+        }
+    </style>
+    
+
     <title>Currency Rate Exchange</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <select>
+    <form id="currencyForm" action="" method="get">
+    <label for="currency">Currency</label>
+    <select id="currency" name="currency">
         {% for currency in currencies %}
-        <option value="{{currency}}">{{currency}}</option>
+        <option value="{{currency}}">{{currency.upper()}}</option>
         {% endfor %}
     </select>
+
+    <label for="date_from">Date from:</label>
+    <input type="date" id="date_from" name="date_from">
+
+    <label for="date_to">Date to:</label>
+    <input type="date" id="date_to" name="date_to">
+
+    <button type="button" onclick="submitForm()">Currency Quotes</button>
+    </form>
+
+    <canvas id="rateChart" width="300" height="150"></canvas>
+
     <table border="1">
         <thead>
             <tr>
@@ -25,7 +142,67 @@
             {% endfor %}
         </tbody>
     </table>
+
+    <script>
+        function submitForm() {
+            let currency = document.getElementById("currency").value;
+            let dateFrom = document.getElementById("date_from").value;
+            let dateTo = document.getElementById("date_to").value;
+            let url = `/rate/${currency}`;
+            if (dateFrom) {
+                url += `/${dateFrom}`;
+                if (dateTo){
+                    url += `/${dateTo}`;
+                }
+            }
+            window.location.href = url;
+        }
+    </script>
+
+    <script id="exchange-data" type="application/json">
+        {
+            "labels": [{% for item in data %}"{{item.date}}"{% if not loop.last %}, {% endif %}{% endfor %}],
+            "rates": [{% for item in data %}{{item.rate}}{% if not loop.last %}, {% endif %}{% endfor %}]
+        }
+    </script>
+
+    <script>
+        const rawData = document.getElementById('exchange-data').textContent;
+        const parsedData = JSON.parse(rawData);
+
+        const labels = parsedData.labels;
+        const rates = parsedData.rates;
+
+        const ctx = document.getElementById('rateChart').getContext('2d');
+
+        const rateChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Exchange Rate',
+                    data: rates,
+                    borderWidth: 2,
+                    fill: false,
+                    tension: 0.1,
+                    borderColor: 'blue',
+                    pointRadius: 3,
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: false
+                    }
+                }
+            }
+        });
+    </script>
+
 </body>
+
+<h1>Currency Rate Exchange</h1>
 <footer>
     <strong>Made by:</strong>
     <em>(c)2025 TomBoh</em>
