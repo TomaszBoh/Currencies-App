@@ -1,3 +1,4 @@
+app copy.py
 .venv/
 templates/about.html
 templates/footer.html
